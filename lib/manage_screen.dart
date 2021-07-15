@@ -13,17 +13,42 @@ import 'package:universal_html/html.dart';
 import 'Modal/SubscriptionModal.dart';
 
 class ManageScreen extends StatefulWidget {
+  String role ;
+  ManageScreen(this.role);
   @override
-  _ManageScreenState createState() => _ManageScreenState();
+  ManageScreenState createState() => ManageScreenState();
 }
 
-class _ManageScreenState extends State<ManageScreen> {
+class ManageScreenState extends State<ManageScreen> {
   @override
   List<DataRow> rowsList = [];
   List<SubsrciptionModal> subList = [];
 
   ScrollController scrCtrl = ScrollController();
 
+getManageList(){
+
+
+  if(widget.role =='1') {
+    return FirebaseFirestore.instance
+        .collection("subscription").
+        where('place',isEqualTo: '흥덕/서원/세종').
+    orderBy("datetime", descending: true).
+    snapshots();
+  }
+
+  if(widget.role =='2') {
+    return FirebaseFirestore.instance
+        .collection("subscription").
+        where('place',isEqualTo: '상당/청원/충북')
+    .orderBy("datetime", descending: true).
+    snapshots();
+  }
+  return FirebaseFirestore.instance
+      .collection("subscription").
+  orderBy("datetime", descending: true).
+  snapshots();
+  }
 
   Widget build(BuildContext context) {
     return Container(
@@ -55,11 +80,8 @@ class _ManageScreenState extends State<ManageScreen> {
                 )),
           ),
           Expanded(
-            child: FutureBuilder(
-                future:FirebaseFirestore.instance
-                    .collection("subscription").
-                    orderBy("datetime", descending: true).
-                    get(),
+            child: StreamBuilder(
+                stream:getManageList(),
                 builder: (context, snapshot) {
                   rowsList = [];
 
@@ -283,6 +305,18 @@ class _ManageScreenState extends State<ManageScreen> {
                                                 overflow: TextOverflow.visible,
 
                               )),
+                              DataColumn(
+                                  label: Text(
+                                    "예금주 생년월일 ",
+                                    style: TextStyle(
+                                        color: Colors.black,
+                                        fontSize: 12,
+                                        wordSpacing: 10,
+                                        fontWeight: FontWeight.bold),
+                                    overflow: TextOverflow.visible,
+
+                                  ))
+                              ,
                             ],
                             rows: rowsList,
 

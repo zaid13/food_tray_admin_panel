@@ -1,9 +1,13 @@
 
 
 import 'dart:async';
+import 'dart:typed_data';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:file_picker/file_picker.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:modal_progress_hud/modal_progress_hud.dart';
 import 'package:rflutter_alert/rflutter_alert.dart';
@@ -13,13 +17,76 @@ import 'Contants/place.dart';
 import 'Widgets/TextWidget.dart';
 
 class NoticeScreen extends StatefulWidget {
+  String role ;
+  NoticeScreen(this.role);
   @override
-  _ManageScreenState createState() => _ManageScreenState();
+  _NoticeScreen createState() => _NoticeScreen();
 }
 
-class _ManageScreenState extends State<NoticeScreen> {
+class _NoticeScreen extends State<NoticeScreen> {
   final formKey = GlobalKey<FormBuilderState>();
   bool _isloading = false;
+
+  String url ='';
+
+  List placeList = [1,2];
+
+
+
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+  List<PlatformFile> _paths;
+  String _extension;
+
+  bool _multiPick = false;
+  String _directoryPath;
+  String _fileName;
+
+  bool _loadingPath = false;
+  FileType _pickingType = FileType.any;
+  TextEditingController _controller = TextEditingController();
+
+
+
+
+  @override
+  void initState() {
+    // TODO: implement initState
+
+  if(widget.role=='1')
+  placeList = [1];
+  else if(widget.role =='2')
+    placeList = [2];
+
+print(placeList);
+
+  }
+
+
+
+  void _openFileExplorer() async {
+    setState(() => _loadingPath = true);
+    try {
+      _directoryPath = null;
+      _paths = (await FilePicker.platform.pickFiles(
+        type: _pickingType,
+        allowMultiple: _multiPick,
+        allowedExtensions: ['jpg', 'png', ],
+      ))
+          ?.files;
+    } on PlatformException catch (e) {
+      print("Unsupported operation" + e.toString());
+    } catch (ex) {
+      print(ex);
+    }
+    if (!mounted) return;
+    setState(() {
+      _loadingPath = false;
+      print(_paths.first.extension);
+      _fileName =
+      _paths != null ? _paths.map((e) => e.name).toString() : '...';
+    });
+
+  }
 
 
   @override
@@ -34,15 +101,80 @@ class _ManageScreenState extends State<NoticeScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                TextWidget(
-                  text: '식판스토리 공지사항',
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 24,
-                    color: blackColor,
-                  ),
-                  left: width * 0.08,
-                  top: height * 0.001,
+                Row(
+                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    TextWidget(
+                      text: '식판스토리 공지사항',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 24,
+                        color: blackColor,
+                      ),
+                      left: width * 0.08,
+                      top: height * 0.001,
+                    ),
+                    Column(
+                      children: [
+                        url==null?Container():
+                        Container(
+                            width: 100,
+                            height: 100,
+                            child: Image(image:NetworkImage(url))),
+                        Container(
+                          // margin: EdgeInsets.only(left: 100),
+                          color: Colors.blue,
+                          child: GestureDetector(
+                              onTap: () async {
+
+                                // _openFileExplorer();
+
+
+                                FilePickerResult result = await FilePicker.platform.pickFiles(
+                                  allowedExtensions: ['png','Png','PNg','PNG','jpg','JPEG','Jpeg','gpeg']
+                                );
+
+                                if (result != null) {
+                                  Uint8List fileBytes = result.files.first.bytes;
+                                  String fileName = result.files.first.name;
+
+                                  String name  = DateTime.now().millisecondsSinceEpoch.toString();
+                                  // Upload file
+                              TaskSnapshot taskSnapshot    =await FirebaseStorage.instance.ref('notice/$name/$fileName').putData(fileBytes);
+                              print('taskSnapshot.bytesTransferred');
+                              print(taskSnapshot.bytesTransferred);
+
+                                  String URL = await taskSnapshot.ref.getDownloadURL();
+
+                                  setState(()  {
+url = URL;
+                                    });
+
+
+
+
+
+                                }
+
+                              },
+                              child: Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: Text("사진 업로드",
+                                 style: TextStyle(
+                                   color: Colors.white
+                                 ),),
+                              )),
+                        ),
+
+                      ],
+                    ),
+                    Container(
+                      height: 3,
+                      width: 2,
+
+                    )
+                    
+                  ],
                 ),
                 Padding(
                   padding: EdgeInsets.only(
@@ -211,7 +343,7 @@ class _ManageScreenState extends State<NoticeScreen> {
 
       _isloading = true;
     });
-    Map mp = {"time":Timestamp.now()};
+    Map mp = {"time":Timestamp.now(),'url':url};
     mp.addAll(data);
 
     DocumentReference ds = await FirebaseFirestore.instance.collection('notice').add(Map.from(mp));

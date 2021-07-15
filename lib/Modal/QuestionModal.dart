@@ -73,8 +73,18 @@ class QuestionModal{
 
 
       DataCell(Text(question,style: TextStyle(fontSize: 12,),)),
-      DataCell(TextField(
-    controller:answerCtrl ,style: TextStyle(fontSize: 12,),)),
+      DataCell(Container(
+        width: 300,
+        height: 100,
+        child: TextField(
+          textInputAction: TextInputAction.newline,
+          keyboardType: TextInputType.multiline,
+
+          // expands: true,
+          minLines: 2,
+          maxLines: 5,
+          controller:answerCtrl ,style: TextStyle(fontSize: 12,),),
+      )),
 
       DataCell(RaisedButton(
         onPressed: () async {

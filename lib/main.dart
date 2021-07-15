@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:food_tray_web_admin/LoginScreen.dart';
 import 'package:food_tray_web_admin/enum.dart';
 import 'package:food_tray_web_admin/qnaScnreen.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -49,13 +50,15 @@ class MyApp extends StatelessWidget {
         // is not restarted.
         primarySwatch: Colors.blue,
       ),
-      home: MyHomePage(title: '관리자 패널'),
+      home: LoginInScreen(),
     );
   }
 }
 
 class MyHomePage extends StatefulWidget {
-  MyHomePage({Key key, this.title}) : super(key: key);
+  String role ;
+
+  MyHomePage(this.role,{Key key, this.title}) : super(key: key);
 
   // This widget is the home page of your application. It is stateful, meaning
   // that it has a State object (defined below) that contains fields that affect
@@ -78,6 +81,7 @@ class _MyHomePageState extends State<MyHomePage> {
   ScreenEnum _screenEnum =ScreenEnum.MANAGE;
   @override
   Widget build(BuildContext context) {
+    //print(widget.role);
     // This method is rerun every time setState is called, for instance as done
     // by the _incrementCounter method above.
     //
@@ -139,7 +143,7 @@ splashColor: Colors.blueAccent,
 ],
               ),
             ),
-            _screenEnum==ScreenEnum.NOTICE? Expanded(child: NoticeScreen()):_screenEnum==ScreenEnum.QNA?Expanded(child: QNAScreen()):Expanded(child: ManageScreen()),
+            _screenEnum==ScreenEnum.NOTICE? Expanded(child: NoticeScreen(widget.role)):_screenEnum==ScreenEnum.QNA?Expanded( child: QNAScreen(widget.role)):Expanded(child: ManageScreen(widget.role)),
 
           ],
         ),

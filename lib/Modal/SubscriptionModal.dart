@@ -80,10 +80,10 @@ class SubsrciptionModal  {
 
 
   }
-  DataRow getDataRow(BuildContext context,Function startLoadinf,Function stoploading) {
+  DataRow getDataRow(BuildContext context,Function startLoadinf,Function stoploading ) {
   return DataRow(cells:_SubscriptionTile(context, startLoadinf, stoploading));
   }
-  List<DataCell> _SubscriptionTile(context,Function startLoadinf,Function stoploading) {
+  List<DataCell> _SubscriptionTile(context,Function startLoadinf,Function stoploading ) {
   return [
     DataCell(Text(index,style: TextStyle(fontSize: 12,),)),
     DataCell(Text(Email,style: TextStyle(fontSize: 10),)),
@@ -107,7 +107,7 @@ class SubsrciptionModal  {
           onPressed: () async {
 
 
-      downloadImage(img,context);
+      downloadImage(img,context,date,txt1,txt3);
 
     // showToast('Image downloaded.');
 
@@ -117,12 +117,54 @@ class SubsrciptionModal  {
           child: Text("Download",
               style: TextStyle(color: Colors.white)),
         )),
+
+    DataCell(RaisedButton(
+      onPressed: () async {
+
+
+
+        try{
+          int i = int.parse(index);
+          deleteImage(i,context);
+
+        }
+        catch(c){
+
+        }
+
+        // showToast('Image downloaded.');
+
+      },
+
+      color: Colors.red,
+      child: Text("Delete",
+          style: TextStyle(color: Colors.white)),
+    )),
+
+
     // DataCell(Text(birth)),,style: TextStyle(fontSize: 12,,
     // DataCell(Text(datetime)),,style: TextStyle(fontSize: 12,,
   ];
   }
 
-    Future<void> downloadImage(String imageUrl,context) async {
+
+    Future<void> deleteImage(int index, context) async {
+      try {
+       QuerySnapshot qs = await FirebaseFirestore.instance.collection('subscription').where('index',isEqualTo: index).get();
+
+
+       print(qs.docs[0].id);
+      await FirebaseFirestore.instance.collection('subscription').doc(qs.docs[0].id).delete();
+
+
+
+
+      } catch (e) {
+        print(e);
+      }
+    }
+
+    Future<void> downloadImage(String imageUrl,context,dt,t1,t2) async {
       try {
         print(imageUrl??"frrrrrrrrrr");
         // first we make a request to the url like you did
@@ -149,7 +191,7 @@ class SubsrciptionModal  {
 
         // set the name of the file we want the image to get
         // downloaded to
-        a.download = 'download.jpg';
+        a.download = '\$${dt}_\$${t1}_\$${t2}.jpg';
 
         // and we click the AnchorElement which downloads the image
         a.click();
@@ -159,6 +201,8 @@ class SubsrciptionModal  {
         print(e);
       }
     }
+
+
     Future<Uint8List> _networkImageToByte(url) async {
       Uint8List byteImage = await networkImageToByte(url);
       return byteImage;
