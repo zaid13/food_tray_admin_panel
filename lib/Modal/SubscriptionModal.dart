@@ -191,7 +191,7 @@ class SubsrciptionModal  {
 
         // set the name of the file we want the image to get
         // downloaded to
-        a.download = '\$${dt}_\$${t1}_\$${t2}.jpg';
+        a.download = '${dt}_${t1}_${t2}.jpg';
 
         // and we click the AnchorElement which downloads the image
         a.click();
